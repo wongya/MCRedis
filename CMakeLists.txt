@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.8)
 project (MCRedis)
 
 if(NOT CMAKE_BUILD_TYPE)
-	message(FATAL_ERROR "Usage : cmake -DHIREDIS_PATH=path -CMAKE_BUILD_TYPE=[Debug|Release] .")
+	message(FATAL_ERROR "Usage : cmake -DHIREDIS_PATH=path -DCMAKE_BUILD_TYPE=[Debug|Release] .")
 endif()
 
 find_library(hiredisLib NAMES hiredis PATHS ${HIREDIS_PATH} NO_DEFAULT_PATH)
