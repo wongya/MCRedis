@@ -56,10 +56,11 @@ namespace MCRedis
 
 	public:
 		CConnectionPool(TMiddleWare&& mw) : mw_(std::forward<TMiddleWare>(mw)) {}
-		~CConnectionPool() {}
+		~CConnectionPool() = default;
 
 	public:
 		bool					create(size_t defaultNum);
+		void					clear();
 		CConnectionRAII			get();
 	};
 
@@ -77,6 +78,13 @@ namespace MCRedis
 		}
 
 		return true;
+	}
+	
+	template <typename TMiddleWare, typename TMutex>
+	void CConnectionPool<TMiddleWare, TMutex>::clear()
+	{
+		std::lock_guard<mutex_t> grab(mutex_);
+		pool_.clear();
 	}
 
 	template <typename TMiddleWare, typename TMutex>

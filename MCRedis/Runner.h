@@ -87,8 +87,8 @@ namespace MCRedis
 						{
 							if(lstReturnedId_.empty())
 							{
-								std::this_thread::sleep_for(std::chrono::milliseconds(100));
 								std::this_thread::yield();
+								std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 								continue;
 							}
 
