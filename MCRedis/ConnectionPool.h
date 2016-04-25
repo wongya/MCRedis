@@ -104,4 +104,3 @@ namespace MCRedis
 		return std::move(conn);
 	}
 }
-
