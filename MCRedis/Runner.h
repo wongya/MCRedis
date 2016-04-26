@@ -102,22 +102,22 @@ namespace MCRedis
 			}
 			~CTaskHolder() = default;
 
-		public : 
+		public:
 			uint64_t	addTask(result_t&& result)
 			{
 				std::unique_lock<mutex_t> grab(mutex_);
-				uint64_t id=++lastId_;
-				return mapTask_.insert(mapTask_t::value_type(id,std::forward<result_t>(result))).second ? id:0;
+				uint64_t id = ++lastId_;
+				return mapTask_.insert(mapTask_t::value_type(id, std::forward<result_t>(result))).second ? id : 0;
 			}
 
 			result_t	getResult(uint64_t id)
 			{
 				std::unique_lock<mutex_t> grab(mutex_);
 				result_t result;
-				auto iter=mapTask_.find(id);
-				if(iter==mapTask_.end())
+				auto iter = mapTask_.find(id);
+				if (iter == mapTask_.end())
 					return result;
-				result=std::move(iter->second);
+				result = std::move(iter->second);
 				mapTask_.erase(id);
 				return result;
 			}
@@ -149,22 +149,22 @@ namespace MCRedis
 		using lstCommand_t = std::vector<CCommand>;
 		using callback_t = std::function<void(CReply&)>;
 
-	protected :
+	protected:
 		pool_t&			pool_;
 		lstCommand_t	lstCommand_;
-		uint64_t		resultId_=0;
+		uint64_t		resultId_ = 0;
 
 	public:
 		CAsyncRunner(pool_t& pool) : pool_(pool) {}
 		CAsyncRunner(CAsyncRunner&& rhs) : pool_(rhs.pool_) {}
 		~CAsyncRunner()
 		{
-			if(resultId_!=0)
+			if (resultId_ != 0)
 				_getTaskHolder().returnId(resultId_);
 		}
 
 	public:
-		void	run(CCommand&& cmd, callback_t callback=nullptr)
+		void	run(CCommand&& cmd, callback_t callback = nullptr)
 		{
 			lstCommand_.push_back(std::forward<CCommand>(cmd));
 			_run(callback);
@@ -194,26 +194,34 @@ namespace MCRedis
 			if(resultId_!=0)
 				_getTaskHolder().returnId(resultId_);
 
-			resultId_=_getTaskHolder().addTask(std::async(std::launch::async,
-				[](lstCommand_t&& lstCommand,callback_t callback,pool_t& pool) -> CReply
+			class ArgWrapper
+			{
+			public : 
+				lstCommand_t	 lstCommand_;
+			public:
+				ArgWrapper(lstCommand_t&& lstCommand) : lstCommand_(std::move(lstCommand)) {}
+			};
+
+			resultId_ = _getTaskHolder().addTask(std::async(std::launch::async,
+				[](ArgWrapper& arg, callback_t callback, pool_t& pool) -> CReply
 				{
 					CReply rpy;
 
-					uint32_t tryCount=TRetryCount;
-					while(tryCount-->0)
+					uint32_t tryCount = TRetryCount;
+					while (tryCount-- > 0)
 					{
-						conn_t conn=std::move(pool.get());
-						for(auto& iter : lstCommand)
+						conn_t conn = std::move(pool.get());
+						for (auto&& iter : arg.lstCommand_)
 							conn->appendCommand(iter);
-						rpy=std::move(conn->getReply());
-						if(rpy.getType()!=CReply::EType::ERROR_CLIENT)
+						rpy = std::move(conn->getReply());
+						if (rpy.getType() != CReply::EType::ERROR_CLIENT)
 							break;
 					}
-					if(callback!=nullptr)
+					if (callback != nullptr)
 						callback(rpy);
-					return rpy;			
+					return rpy;
 				}
-				, std::move(lstCommand_)
+				, ArgWrapper(std::move(lstCommand_))
 				, callback
 				, std::ref(pool_)
 			));

@@ -45,6 +45,7 @@ namespace MCRedis
 			str_=std::forward<std::string>(rhs.str_);
 			integer_=rhs.integer_;
 			lstReply_=std::forward<lstReply_t>(rhs.lstReply_);
+			return *this;
 		}
 
 	public:
