@@ -113,18 +113,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\Command.h" />
-    <ClInclude Include="..\..\include\Connection.h" />
-    <ClInclude Include="..\..\include\ConnectionPool.h" />
-    <ClInclude Include="..\..\include\MiddleWare.h" />
-    <ClInclude Include="..\..\include\Reply.h" />
-    <ClInclude Include="..\..\include\Runner.h" />
-    <ClInclude Include="..\..\MCRedis.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\src\Connection.cpp" />
     <ClCompile Include="..\..\src\MiddleWare.cpp" />
     <ClCompile Include="..\..\src\Reply.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\MCRedis\Command.h" />
+    <ClInclude Include="..\..\MCRedis\Connection.h" />
+    <ClInclude Include="..\..\MCRedis\ConnectionPool.h" />
+    <ClInclude Include="..\..\MCRedis\MiddleWare.h" />
+    <ClInclude Include="..\..\MCRedis\Reply.h" />
+    <ClInclude Include="..\..\MCRedis\Runner.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
