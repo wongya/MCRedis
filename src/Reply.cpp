@@ -1,13 +1,13 @@
 #include "../MCRedis.h"
 #include "../MCRedis/Reply.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #	pragma warning(push,0)
-#endif // WIN32
+#endif // _MSC_VER
 #include "hiredis.h"
-#ifdef WIN32
+#ifdef _MSC_VER
 #	pragma warning(pop)
-#endif // WIN32
+#endif // _MSC_VER
 
 namespace MCRedis
 {

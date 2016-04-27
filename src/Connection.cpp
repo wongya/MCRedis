@@ -1,13 +1,13 @@
 #include "../MCRedis.h"
 #include "../MCRedis/Connection.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #	pragma warning(push,0)
-#endif // WIN32
+#endif // _MSC_VER
 #include "hiredis.h"
-#ifdef WIN32
+#ifdef _MSC_VER
 #	pragma warning(pop)
-#endif // WIN32
+#endif // _MSC_VER
 
 namespace MCRedis
 {
@@ -64,15 +64,10 @@ namespace MCRedis
 			return CReply(result_ptr_t(rawReply).get());
 		}
 
-		int errorNo() const noexcept
-		{
-			return contextPtr_->err;
-		}
+		int				errorNo() const noexcept { return contextPtr_->err; }
+		const char*		errorStr() const noexcept { return contextPtr_->errstr; }
 
-		const char*	errorStr() const noexcept
-		{
-			return contextPtr_->errstr;
-		}
+		bool			isValid() const noexcept { return contextPtr_ != nullptr; }
 	};
 
 	bool CConnection::CImpl::connect(std::string host, uint16_t port) noexcept
@@ -138,5 +133,10 @@ namespace MCRedis
 	const char*	CConnection::errorStr() const noexcept
 	{
 		return impl_->errorStr();
+	}
+
+	bool CConnection::isValid() const noexcept
+	{
+		return impl_->isValid();
 	}
 }

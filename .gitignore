@@ -1,5 +1,11 @@
 vs2015/vs.VC.opendb
 vs2015/vs.sdf
 vs2015/test/x64/
-vs2015/MCRedis/x64/Debug/MCRedis.idb
 vs2015/MCRedis/x64/
+vs2013/MCRedis/Debug/
+vs2013/test/Debug/
+vs2013/ipch/
+vs2013/test/x64/Debug/
+vs2013/vs.opensdf
+vs2013/vs.sdf
+vs2013/MCRedis/x64/

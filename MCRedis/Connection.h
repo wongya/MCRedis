@@ -26,7 +26,9 @@ namespace MCRedis
 		bool		appendCommand(CCommand& command) noexcept;
 		CReply		getReply() noexcept;
 
+	public : 
 		int			errorNo() const noexcept;
 		const char*	errorStr() const noexcept;
+		bool		isValid() const noexcept;
 	};
 }

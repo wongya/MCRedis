@@ -1,16 +1,25 @@
 #include "../MCRedis.h"
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#	include <winsock2.h>
+#endif //_MSC_VER
+
 int main()
 {
+#ifdef _MSC_VER
+	WSADATA wsa;
+	WSAStartup(MAKEWORD(2, 0), &wsa);
+#endif // _MSC_VER
+
 	auto fn=[](MCRedis::CConnection* ptr)
 	{
 		ptr->sendCommand(MCRedis::CCommand("select",0));
 		printf("New session allocated\n");
 	};
 	MCRedis::MiddleWare::CDefaultMiddleWare mw("localhost",6379,fn);
-	MCRedis::CConnectionPool<decltype(mw)> redisPool(std::move(mw));
-	if(redisPool.create(0)==false)
+	MCRedis::CConnectionPool<std::mutex,decltype(mw)> redisPool(std::move(mw));
+	if(redisPool.create(1)==false)
 		printf("create redis connection pool failed\n");
 
 	{

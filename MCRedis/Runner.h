@@ -36,11 +36,12 @@ namespace MCRedis
 		CReply	_run(std::function<void(CReply&)> callback)
 		{
 			CReply rpy;
-			
 			uint32_t tryCount=TRetryCount;
 			while(tryCount-->0)
 			{
 				conn_t conn=std::move(pool_.get());
+				if (conn == nullptr || conn->isValid() == false)
+					continue;
 				for(auto& iter : lstCommand_)
 					conn->appendCommand(iter);
 				rpy=std::move(conn->getReply());
@@ -211,11 +212,12 @@ namespace MCRedis
 #endif //__linux
 				{
 					CReply rpy;
-
 					uint32_t tryCount = TRetryCount;
 					while (tryCount-- > 0)
 					{
 						conn_t conn = std::move(pool.get());
+						if (conn == nullptr || conn->isValid() == false)
+							continue;
 						for (auto&& iter : arg.lstCommand_)
 							conn->appendCommand(iter);
 						rpy = std::move(conn->getReply());

@@ -11,6 +11,14 @@
 #include <array>
 #include <random>
 
+#ifdef _MSC_VER
+#	if	_MSC_VER < 1900
+#		ifndef noexcept
+#			define noexcept throw()
+#		endif
+#	endif
+#endif // _MSC_VER
+
 #include "MCRedis/Command.h"
 #include "MCRedis/Reply.h"
 #include "MCRedis/Connection.h"
