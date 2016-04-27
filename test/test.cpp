@@ -17,8 +17,9 @@ int main()
 		ptr->sendCommand(MCRedis::CCommand("select",0));
 		printf("New session allocated\n");
 	};
-	MCRedis::MiddleWare::CDefaultMiddleWare mw("localhost",6379,fn);
-	MCRedis::CConnectionPool<std::mutex,decltype(mw)> redisPool(std::move(mw));
+	MCRedis::MiddleWare::CDefaultMiddleWare mw1("localhost",6379,fn);
+	MCRedis::MiddleWare::CSentinelSupport mw2("localhost", 26379, "mymaster", MCRedis::MiddleWare::CSentinelSupport::ERole::MASTER, fn);
+	MCRedis::CConnectionPool<std::mutex,decltype(mw2), decltype(mw1)> redisPool(std::move(mw2), std::move(mw1));
 	if(redisPool.create(1)==false)
 		printf("create redis connection pool failed\n");
 
