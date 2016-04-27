@@ -11,6 +11,7 @@ namespace MCRedis
 		using pool_t = TConnectionPool;
 		using conn_t = typename pool_t::CConnectionRAII;
 		using lstCommand_t = std::vector<CCommand>;
+		using callback_t = std::function<void(CReply&)>;
 
 	protected :
 		pool_t&			pool_;
@@ -22,14 +23,14 @@ namespace MCRedis
 		~CRunner() = default;
 
 	public:
-		CReply	run(CCommand&& cmd, std::function<void(CReply&)> callback=nullptr)
+		CReply	run(CCommand&& cmd, callback_t callback=nullptr)
 		{
 			lstCommand_.push_back(std::forward<CCommand>(cmd));
 			return _run(callback);
 		}
 
 		void	append(CCommand&& cmd) { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
-		CReply	run (std::function<void(CReply&)> callback=nullptr) { return _run(callback); }
+		CReply	runCommands(callback_t callback=nullptr) { return _run(callback); }
 		
 	protected:
 		CReply	_run(std::function<void(CReply&)> callback)
@@ -49,8 +50,8 @@ namespace MCRedis
 			
 			lstCommand_.clear();
 			if(callback!=nullptr)
-				callback(rpy);		
-			return rpy;			
+				callback(rpy);
+			return rpy;	
 		}
 	};
 
@@ -171,7 +172,7 @@ namespace MCRedis
 		}
 
 		void	append(CCommand&& cmd) { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
-		void	run(callback_t callback=nullptr) { _run(callback); }
+		void	runCommands(callback_t callback=nullptr) { _run(callback); }
 		CReply	getResult()
 		{
 			if(resultId_==0)
