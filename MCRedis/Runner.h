@@ -58,7 +58,7 @@ namespace MCRedis
 	class CAsyncRunner
 	{
 	protected : 
-		using result_t = std::future<CReply>;
+		using result_t = std::future<MCRedis::CReply>;
 
 		class CTaskHolder
 		{
@@ -203,7 +203,11 @@ namespace MCRedis
 			};
 
 			resultId_ = _getTaskHolder().addTask(std::async(std::launch::async,
+#ifdef __linux
+				[](ArgWrapper&& arg, callback_t callback, pool_t& pool) -> CReply
+#else  //__linux
 				[](ArgWrapper& arg, callback_t callback, pool_t& pool) -> CReply
+#endif //__linux
 				{
 					CReply rpy;
 
@@ -221,7 +225,11 @@ namespace MCRedis
 						callback(rpy);
 					return rpy;
 				}
+#ifdef __linux
+				, std::move(ArgWrapper(std::move(lstCommand_)))
+#else  //__linux
 				, ArgWrapper(std::move(lstCommand_))
+#endif //__linux
 				, callback
 				, std::ref(pool_)
 			));

@@ -27,12 +27,15 @@ namespace MCRedis
 			, lstCommandBuffer_(std::forward<decltype(rhs.lstCommandBuffer_)>(rhs.lstCommandBuffer_))
 		{
 		}
+#ifdef __linux
+#else  //__linux
 		CCommand(const CCommand& rhs)
 			: lstCommand_(rhs.lstCommand_)
 			, lstCommandSize_(rhs.lstCommandSize_)
 			, lstCommandBuffer_(rhs.lstCommandBuffer_)
 		{
 		}
+#endif	//__linux
 		~CCommand() = default;
 
 	protected:
