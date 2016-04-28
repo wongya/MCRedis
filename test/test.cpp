@@ -1,16 +1,16 @@
 #include "../MCRedis.h"
 #include <stdio.h>
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #	include <winsock2.h>
-#endif //_MSC_VER
+#endif //WIN32
 
 int main()
 {
-#ifdef _MSC_VER
+#ifdef WIN32
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
-#endif // _MSC_VER
+#endif // WIN32
 
 	auto fn=[](MCRedis::CConnection* ptr)
 	{
