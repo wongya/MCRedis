@@ -141,6 +141,8 @@ namespace MCRedis
 				returnIdHandler_.wait();
 
 				std::unique_lock<mutex_t> grab(mutex_);
+				for (auto& iter : mapTask_)
+					iter.second.wait();
 				mapTask_.clear();
 			}
 		};
