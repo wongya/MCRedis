@@ -66,22 +66,38 @@ namespace MCRedis
 		CConnectionRAII			get();
 
 	protected : 
+#ifdef _MSC_VER
+		template <size_t TIndex>
+		conn_ptr_t 				_getConnectionImpl()
+		{
+			auto& mw = std::get<TIndex>(mw_);
+			conn_ptr_t connPtr(mw.getConnection(), [&mw](CConnection* p) { mw.freeConnection(p); });
+			if (connPtr == nullptr)
+				return _getConnectionImpl<TIndex+1>(mw_);
+			return std::move(connPtr);
+		}
+		template <>
+		conn_ptr_t 				_getConnectionImpl<sizeof...(TMiddleWare)>() { return nullptr; }
+		conn_ptr_t				_getConnection() { return _getConnectionImpl<0>(); }
+#else  //_MSC_VER
 		template <size_t TIndex,typename TDummy=void>
-		struct _getConnection
+		struct _getConnectionImpl
 		{
 			conn_ptr_t operator()(lstMW_t& mw_)
 			{
 				auto& mw = std::get<TIndex>(mw_);
 				conn_ptr_t connPtr(mw.getConnection(), [&mw](CConnection* p) { mw.freeConnection(p); });
 				if (connPtr == nullptr)
-					return _getConnection<TIndex+1>{}(mw_);
+					return _getConnectionImpl<TIndex+1>{}(mw_);
 				return std::move(connPtr);
 			}
 		};
 		template <typename TDummy>
-		struct _getConnection<std::tuple_size<lstMW_t>::value,TDummy> {
+		struct _getConnectionImpl<std::tuple_size<lstMW_t>::value,TDummy> {
 			conn_ptr_t operator()(lstMW_t&) { return nullptr; }
 		};
+		conn_ptr_t				_getConnection() { return _getConnectionImpl<0>{}(mw_); }
+#endif //_MSC_VER
 	};
 
 	template <typename TMutex, typename ...TMiddleWare>
@@ -89,7 +105,7 @@ namespace MCRedis
 	{
 		for (size_t x = 0; x < defaultNum; ++x)
 		{
-			conn_ptr_t connPtr(_getConnection<0>{}(mw_));
+			conn_ptr_t connPtr(_getConnection());
 			if (connPtr==nullptr)
 				return false;
 
@@ -113,7 +129,7 @@ namespace MCRedis
 		std::lock_guard<mutex_t> grab(mutex_);
 		if (pool_.empty() == true)
 		{
-			conn_ptr_t connPtr(_getConnection<0>{}(mw_));
+			conn_ptr_t connPtr(_getConnection());
 			if (connPtr == nullptr)
 				return CConnectionRAII(this, nullptr);
 			return CConnectionRAII(this, std::move(connPtr));
