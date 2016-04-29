@@ -73,7 +73,7 @@ namespace MCRedis
 			auto& mw = std::get<TIndex>(mw_);
 			conn_ptr_t connPtr(mw.getConnection(), [&mw](CConnection* p) { mw.freeConnection(p); });
 			if (connPtr == nullptr)
-				return _getConnectionImpl<TIndex+1>(mw_);
+				return _getConnectionImpl<TIndex+1>();
 			return std::move(connPtr);
 		}
 		template <>
