@@ -7,7 +7,7 @@ branches:
   - master
 before_install:
 #   - sudo apt-get update
-install: export CXX="g++-4.8"
+install: 
 addons:
   apt:
     sources:
@@ -21,5 +21,8 @@ notifications:
   email:
 #    on_success: change
 #    on_failure: always
-#befor_script:
-script: cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . && make
+befor_script:
+  - export CXX="g++-4.8"
+script: 
+  - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
+  - make
