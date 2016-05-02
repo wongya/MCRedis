@@ -6,7 +6,7 @@ branches:
   only:
   - master
 before_install:
-   - sudo apt-get update
+#   - sudo apt-get update
 notifications:
   recipients:
     - wongya@gmail.com
@@ -14,5 +14,5 @@ notifications:
 #    on_success: change
 #    on_failure: always
 befor_script:
-  cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug .
+  - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug .
 script: make
