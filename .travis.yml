@@ -9,20 +9,13 @@ before_install:
 #   - sudo apt-get update
 install:
   - export CXX="g++-4.9"
-addons:
-  apt:
-    sources:
-     - ubuntu-toolchain-r-test
-    packages:
-     - gcc-4.9
-     - g++-4.9
 notifications:
   recipients:
     - wongya@gmail.com
   email:
 #    on_success: change
 #    on_failure: always
-befor_script:
+#befor_script:
 script:
   - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
   - make
