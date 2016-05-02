@@ -1,0 +1,16 @@
+language: cpp
+sudo: required
+compiler:
+   - gcc
+branches:
+  only:
+  - master
+before_install:
+   - sudo apt-get update
+notifications:
+  recipients:
+    - wongya@gmail.com
+  email:
+#    on_success: change
+#    on_failure: always
+script: cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . && make
