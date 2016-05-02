@@ -6,23 +6,17 @@ branches:
   only:
   - master
 before_install:
-#   - sudo apt-get update
+  - sudo apt-get update
 install: 
 addons:
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-    - gcc-4.8
-    - g++-4.8
-notifications:
-  recipients:
-    - wongya@gmail.com
-  email:
-#    on_success: change
-#    on_failure: always
+      - gcc-4.8
+      - g++-4.8
 befor_script:
-  - export CXX="g++-4.8"
 script: 
   - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
-#  - make
+  - export CXX="g++-4.8"
+  - make
