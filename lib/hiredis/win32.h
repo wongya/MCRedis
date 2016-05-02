@@ -10,6 +10,22 @@
 #define va_copy(d,s) ((d) = (s))
 #endif
 
+#ifndef	EINPROGRESS
+#define	EINPROGRESS	WSAEWOULDBLOCK
+#endif
+
+#ifndef	EHOSTUNREACH
+#define	EHOSTUNREACH WSAEINPROGRESS
+#endif
+
+#ifndef	ETIMEDOUT
+#define ETIMEDOUT WSAETIMEDOUT
+#endif
+
+#ifndef	EADDRNOTAVAIL
+#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
+#endif
+
 #ifndef snprintf
 #define snprintf c99_snprintf
 

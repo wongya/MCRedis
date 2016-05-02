@@ -35,7 +35,11 @@
 #define __HIREDIS_H
 #include "read.h"
 #include <stdarg.h> /* for va_list */
-#include <sys/time.h> /* for struct timeval */
+#ifdef  WIN32
+# include <time.h>
+#else  //WIN32
+# include <sys/time.h> /* for struct timeval */
+#endif //WIN32
 #include <stdint.h> /* uintXX_t, etc */
 #include "sds.h" /* for sds */
 
@@ -84,11 +88,18 @@
  * depending on system issues, so we need to operate on the error buffer
  * differently depending on which strerror_r we're using. */
 #ifndef _GNU_SOURCE
+#ifdef  WIN32
+#define __redis_strerror_r(errno, buf, len)                                    \
+    do {                                                                       \
+        strerror_s((buf), (len), (errno));                                     \
+    } while (0)
+#else  //WIN32
 /* "regular" POSIX strerror_r that does the right thing. */
 #define __redis_strerror_r(errno, buf, len)                                    \
     do {                                                                       \
         strerror_r((errno), (buf), (len));                                     \
     } while (0)
+#endif //WIN32
 #else
 /* "bad" GNU strerror_r we need to clean up after. */
 #define __redis_strerror_r(errno, buf, len)                                    \

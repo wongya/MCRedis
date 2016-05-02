@@ -34,7 +34,11 @@
 #include "fmacros.h"
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
+#ifdef  WIN32
+# include <winsock2.h>
+#else  //WIN32
+# include <unistd.h>
+#endif //WIN32
 #include <assert.h>
 #include <errno.h>
 #include <ctype.h>
@@ -402,7 +406,11 @@ int redisvFormatCommand(char **target, const char *format, va_list ap) {
 
     pos = sprintf(cmd,"*%d\r\n",argc);
     for (j = 0; j < argc; j++) {
+#ifdef  WIN32
+        pos += sprintf(cmd+pos,"$%u\r\n",sdslen(curargv[j]));
+#else  //WIN32
         pos += sprintf(cmd+pos,"$%zu\r\n",sdslen(curargv[j]));
+#endif //WIN32
         memcpy(cmd+pos,curargv[j],sdslen(curargv[j]));
         pos += sdslen(curargv[j]);
         sdsfree(curargv[j]);
@@ -552,7 +560,11 @@ int redisFormatCommandArgv(char **target, int argc, const char **argv, const siz
     pos = sprintf(cmd,"*%d\r\n",argc);
     for (j = 0; j < argc; j++) {
         len = argvlen ? argvlen[j] : strlen(argv[j]);
+#ifdef  WIN32
+        pos += sprintf(cmd+pos,"$%u\r\n",len);
+#else  //WIN32
         pos += sprintf(cmd+pos,"$%zu\r\n",len);
+#endif //WIN32
         memcpy(cmd+pos,argv[j],len);
         pos += len;
         cmd[pos++] = '\r';
@@ -616,8 +628,13 @@ static redisContext *redisContextInit(void) {
 void redisFree(redisContext *c) {
     if (c == NULL)
         return;
+#ifdef  WIN32
+    if (c->fd > 0)
+        closesocket(c->fd);
+#else  //WIN32
     if (c->fd > 0)
         close(c->fd);
+#endif //WIN32
     if (c->obuf != NULL)
         sdsfree(c->obuf);
     if (c->reader != NULL)
@@ -645,7 +662,11 @@ int redisReconnect(redisContext *c) {
     memset(c->errstr, '\0', strlen(c->errstr));
 
     if (c->fd > 0) {
+#ifdef  WIN32
+        closesocket(c->fd);
+#else  //WIN32
         close(c->fd);
+#endif //WIN32
     }
 
     sdsfree(c->obuf);
@@ -799,7 +820,11 @@ int redisBufferRead(redisContext *c) {
     if (c->err)
         return REDIS_ERR;
 
+#ifdef  WIN32
+    nread = recv(c->fd,buf,sizeof(buf),0);
+#else  //WIN32
     nread = read(c->fd,buf,sizeof(buf));
+#endif //WIN32
     if (nread == -1) {
         if ((errno == EAGAIN && !(c->flags & REDIS_BLOCK)) || (errno == EINTR)) {
             /* Try again later */
@@ -836,7 +861,11 @@ int redisBufferWrite(redisContext *c, int *done) {
         return REDIS_ERR;
 
     if (sdslen(c->obuf) > 0) {
+#ifdef  WIN32
+        nwritten = send(c->fd,c->obuf,sdslen(c->obuf),0);
+#else  //WIN32
         nwritten = write(c->fd,c->obuf,sdslen(c->obuf));
+#endif //WIN32
         if (nwritten == -1) {
             if ((errno == EAGAIN && !(c->flags & REDIS_BLOCK)) || (errno == EINTR)) {
                 /* Try again later */

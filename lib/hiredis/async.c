@@ -32,7 +32,11 @@
 #include "fmacros.h"
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
+#ifdef  WIN32
+# include <winsock2.h>
+#else  //WIN32
+# include <strings.h>
+#endif //WIN32
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
