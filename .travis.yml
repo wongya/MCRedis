@@ -18,7 +18,7 @@ addons:
 befor_script:
 script: 
   - export CXX=g++-4.9
-  - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
+  - cmake -DHIREDIS_PATH=./lib/hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
   - make
   
 notifications:
