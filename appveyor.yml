@@ -6,6 +6,12 @@ os:
 environment:
   matrix:
   - TOOLSET: vs2013
+  
+platform:
+  - x64
+  
+configuration:
+  - Debug
 
 build:
   project: vs2013/vs.sln
