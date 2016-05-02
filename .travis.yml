@@ -1,5 +1,5 @@
 language: cpp
-sudo: false
+sudo: required
 compiler:
    - g++
 branches:
@@ -20,3 +20,10 @@ script:
   - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
   - export CXX="g++-4.8"
   - make
+  
+notifications:
+  recipients:
+    - wongya@gmail.com
+  email:
+#    on_success: change
+#    on_failure: always
