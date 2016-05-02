@@ -1,5 +1,5 @@
 language: cpp
-sudo: required
+sudo: false
 compiler:
    - g++
 branches:
@@ -8,7 +8,14 @@ branches:
 before_install:
 #   - sudo apt-get update
 install:
-  - export CXX="g++-4.9"
+- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.8
+    - g++-4.8
 notifications:
   recipients:
     - wongya@gmail.com
