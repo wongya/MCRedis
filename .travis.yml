@@ -13,4 +13,6 @@ notifications:
   email:
 #    on_success: change
 #    on_failure: always
-script: cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . && make
+befor_script:
+  cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug .
+script: make
