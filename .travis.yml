@@ -25,4 +25,4 @@ befor_script:
   - export CXX="g++-4.8"
 script: 
   - cmake -DHIREDIS_PATH=../hiredis/ -DCMAKE_BUILD_TYPE=Debug . 
-  - make
+#  - make
