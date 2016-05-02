@@ -8,4 +8,4 @@ environment:
   - TOOLSET: vs2013
 
 build:
-  project: vs2013/vs.sin
+  project: vs2013/vs.sln
