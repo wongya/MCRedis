@@ -23,17 +23,17 @@ namespace MCRedis
 		~CRunner() = default;
 
 	public:
-		CReply	run(CCommand&& cmd, callback_t callback=nullptr)
+		CReply	run(CCommand&& cmd, callback_t callback=nullptr) noexcept
 		{
 			lstCommand_.push_back(std::forward<CCommand>(cmd));
 			return _run(callback);
 		}
 
-		void	append(CCommand&& cmd) { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
-		CReply	runCommands(callback_t callback=nullptr) { return _run(callback); }
+		void	append(CCommand&& cmd) noexcept { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
+		CReply	runCommands(callback_t callback=nullptr) noexcept { return _run(callback); }
 		
 	protected:
-		CReply	_run(std::function<void(CReply&)> callback)
+		CReply	_run(std::function<void(CReply&)> callback) noexcept
 		{
 			CReply rpy;
 			uint32_t tryCount=TRetryCount;
@@ -105,14 +105,14 @@ namespace MCRedis
 			~CTaskHolder() = default;
 
 		public:
-			uint64_t	addTask(result_t&& result)
+			uint64_t	addTask(result_t&& result) noexcept
 			{
 				std::unique_lock<mutex_t> grab(mutex_);
 				uint64_t id = ++lastId_;
 				return mapTask_.insert(mapTask_t::value_type(id, std::forward<result_t>(result))).second ? id : 0;
 			}
 
-			result_t	getResult(uint64_t id)
+			result_t	getResult(uint64_t id) noexcept
 			{
 				std::unique_lock<mutex_t> grab(mutex_);
 				result_t result;
@@ -123,19 +123,19 @@ namespace MCRedis
 				mapTask_.erase(id);
 				return result;
 			}
-			void		remove(uint64_t id)
+			void		remove(uint64_t id) noexcept
 			{
 				std::unique_lock<mutex_t> grab(mutex_);
 				mapTask_.erase(id);
 			}
 
-			void		returnId(uint64_t id)
+			void		returnId(uint64_t id) noexcept
 			{
 				std::unique_lock<mutex_t> grab(mutex_);
 				lstReturnedId_.push_back(id);
 			}
 
-			void		stop()
+			void		stop() noexcept
 			{
 				terminate_=true;
 				returnIdHandler_.wait();
@@ -168,15 +168,15 @@ namespace MCRedis
 		}
 
 	public:
-		void	run(CCommand&& cmd, callback_t callback = nullptr)
+		void	run(CCommand&& cmd, callback_t callback = nullptr) noexcept
 		{
 			lstCommand_.push_back(std::forward<CCommand>(cmd));
 			_run(callback);
 		}
 
-		void	append(CCommand&& cmd) { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
-		void	runCommands(callback_t callback=nullptr) { _run(callback); }
-		CReply	getResult()
+		void	append(CCommand&& cmd) noexcept { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
+		void	runCommands(callback_t callback=nullptr) noexcept { _run(callback); }
+		CReply	getResult() noexcept
 		{
 			if(resultId_==0)
 				return CReply();
@@ -193,7 +193,7 @@ namespace MCRedis
 		}
 
 	protected:
-		void	_run(callback_t callback)
+		void	_run(callback_t callback) noexcept
 		{
 			if(resultId_!=0)
 				_getTaskHolder().returnId(resultId_);

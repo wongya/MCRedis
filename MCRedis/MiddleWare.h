@@ -17,7 +17,7 @@ namespace MCRedis
 			~CDefaultMiddleWare() = default;
 
 		public:
-			CConnection*	getConnection() const
+			CConnection*	getConnection() const noexcept
 			{
 				CConnection* p = new CConnection;
 				if (p->connect(hostName_.c_str(), port_) == false)
@@ -29,7 +29,7 @@ namespace MCRedis
 					callback_(p);
 				return p;
 			}
-			void			freeConnection(CConnection* p) { delete p; }
+			void			freeConnection(CConnection* p) noexcept { delete p; }
 		};
 
 		class CSentinelSupport
@@ -57,8 +57,8 @@ namespace MCRedis
 			~CSentinelSupport() = default;
 
 		public:
-			CConnection*	getConnection() const;
-			void			freeConnection(CConnection* p) { delete p; }
+			CConnection*	getConnection() const noexcept;
+			void			freeConnection(CConnection* p) noexcept { delete p; }
 		};
 	}
 }

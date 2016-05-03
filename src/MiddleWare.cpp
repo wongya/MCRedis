@@ -24,7 +24,7 @@ namespace MCRedis
 			std::srand(std::random_device()());
 		}
 
-		CConnection* CSentinelSupport::getConnection() const
+		CConnection* CSentinelSupport::getConnection() const noexcept
 		{
 			if(lstSentinel_.empty()==true)
 				return nullptr;
