@@ -89,7 +89,7 @@ namespace MCRedis
 	}
 
 	CConnection::CConnection()
-		: impl_(std::make_unique<CConnection::CImpl>())
+		: impl_(new CConnection::CImpl)
 	{
 	}
 
