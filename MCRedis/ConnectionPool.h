@@ -59,6 +59,9 @@ namespace MCRedis
 	public:
 		CConnectionPool(TMiddleWare&&... mw) : mw_(std::forward<TMiddleWare>(mw)...) {}
 		~CConnectionPool() = default;
+		
+		CConnectionPool(const CConnectionPool&)=delete;
+		CConnectionPool& operator=(const CConnectionPool&)=delete;
 
 	public:
 		bool					create(size_t defaultNum);
