@@ -11,7 +11,7 @@ if(${hiredisLib} STREQUAL "hiredisLib-NOTFOUND")
 	message(FATAL_ERROR "Usage : cmake -DHIREDIS_PATH=path -CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -std=c++14")
 

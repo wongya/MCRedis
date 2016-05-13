@@ -40,40 +40,40 @@ namespace MCRedis
 
 	protected:
 		template <size_t TIndex, typename T, typename ...TArg>
-		std::enable_if_t<std::is_same<std::string, std::remove_cv_t<std::remove_reference_t<T>>>::value, void> _expandArgument(T&& arg, TArg&&... args)
+		typename std::enable_if<std::is_same<std::string, typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg, TArg&&... args)
 		{
 			_expandArgumentStr<TIndex>(std::forward<T>(arg));
 			_expandArgument<TIndex + 1>(std::forward<TArg>(args)...);
 		}
 
 		template <size_t TIndex, typename T, typename ...TArg>
-		std::enable_if_t<std::is_same<std::string, std::remove_cv_t<std::remove_reference_t<T>>>::value, void> _expandArgument(T&& arg)
+		typename std::enable_if<std::is_same<std::string, typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg)
 		{
 			_expandArgumentStr<TIndex>(std::forward<T>(arg));
 		}
 
 		template <size_t TIndex, typename T, typename ...TArg>
-		std::enable_if_t<std::is_arithmetic<std::remove_cv_t<std::remove_reference_t<T>>>::value, void> _expandArgument(T&& arg, TArg&&... args)
+		typename std::enable_if<std::is_arithmetic<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg, TArg&&... args)
 		{
 			_expandArgumentStr<TIndex>(std::to_string(arg));
 			_expandArgument<TIndex + 1>(std::forward<TArg>(args)...);
 		}
 
 		template <size_t TIndex, typename T, typename ...TArg>
-		std::enable_if_t<std::is_arithmetic<std::remove_cv_t<std::remove_reference_t<T>>>::value, void> _expandArgument(T&& arg)
+		typename std::enable_if<std::is_arithmetic<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg)
 		{
 			_expandArgumentStr<TIndex>(std::to_string(arg));
 		}
 
 		template <size_t TIndex, typename T, typename ...TArg>
-		std::enable_if_t<std::is_same<const char*, std::decay_t<T>>::value, void> _expandArgument(T&& arg, TArg&&... args)
+		typename std::enable_if<std::is_same<const char*, typename std::decay<T>::type>::value, void>::type _expandArgument(T&& arg, TArg&&... args)
 		{
 			_expandArgumentStr<TIndex>(std::string(arg));
 			_expandArgument<TIndex + 1>(std::forward<TArg>(args)...);
 		}
 
 		template <size_t TIndex, typename T, typename ...TArg>
-		std::enable_if_t<std::is_same<const char*, std::decay_t<T>>::value, void> _expandArgument(T&& arg)
+		typename std::enable_if<std::is_same<const char*, typename std::decay<T>::type>::value, void>::type _expandArgument(T&& arg)
 		{
 			_expandArgumentStr<TIndex>(std::string(arg));
 		}
