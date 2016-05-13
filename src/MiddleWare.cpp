@@ -10,7 +10,7 @@ namespace MCRedis
 			, role_(role)
 			, callback_(callback)
 		{
-			auto p = std::make_unique<CConnection>();
+			std::unique_ptr<CConnection> p(new CConnection);
 			if (p->connect(hostName.c_str(), port) == false)
 				return;
 
