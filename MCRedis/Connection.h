@@ -17,6 +17,9 @@ namespace MCRedis
 	public :
 		CConnection();
 		~CConnection();
+		
+		CConnection(const CConnection&)=delete;
+		CConnection& operator=(const CConnection&)=delete;
 
 	public :
 		bool		connect(const char* host, unsigned short port) noexcept;
