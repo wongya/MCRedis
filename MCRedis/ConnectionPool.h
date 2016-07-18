@@ -34,6 +34,8 @@ namespace MCRedis
 			conn_ptr_t			connPtr_;
 
 		public:
+			CConnectionRAII() = delete;
+			CConnectionRAII(const CConnectionRAII&) = delete;
 			CConnectionRAII(CConnectionPool* parent, conn_ptr_t&& conn_ptr) : parent_(parent), connPtr_(std::forward<conn_ptr_t>(conn_ptr)) {}
 			CConnectionRAII(CConnectionRAII&& rhs) : parent_(rhs.parent_), connPtr_(std::forward<conn_ptr_t>(rhs.connPtr_)) {}
 			~CConnectionRAII()
@@ -49,6 +51,7 @@ namespace MCRedis
 			CConnection*		operator->() const { return connPtr_.get(); }
 			CConnection*		operator->() { return connPtr_.get(); }
 			bool				operator==(CConnection* p) const { return connPtr_.get() == p; }
+			CConnectionRAII&	operator=(const CConnectionRAII&) = delete;
 		};
 
 	protected:
