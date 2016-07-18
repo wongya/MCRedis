@@ -21,6 +21,7 @@ namespace MCRedis
 		CRunner(pool_t& pool) : pool_(pool) {}
 		CRunner(CRunner&& rhs) : pool_(rhs.pool_) {}
 		~CRunner() = default;
+		CRunner& operator=(const CRunner&) = delete;
 
 	public:
 		CReply	run(CCommand&& cmd, callback_t callback=nullptr) noexcept
@@ -166,6 +167,8 @@ namespace MCRedis
 			if (resultId_ != 0)
 				_getTaskHolder().returnId(resultId_);
 		}
+
+		CAsyncRunner& operator=(const CAsyncRunner&) = delete;
 
 	public:
 		void	run(CCommand&& cmd, callback_t callback = nullptr) noexcept
