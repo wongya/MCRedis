@@ -38,21 +38,37 @@ namespace MCRedis
 		{
 			CReply rpy;
 			uint32_t tryCount=TRetryCount;
-			while(tryCount-->0)
+			size_t startCmdSeq = 0;
+
+			while (tryCount-- > 0)
 			{
-				conn_t conn=std::move(pool_.get());
+				conn_t conn=pool_.get();
 				if (conn == nullptr || conn->isValid() == false)
 					continue;
-				for(auto& iter : lstCommand_)
-					conn->appendCommand(iter);
-				rpy=std::move(conn->getReply());
-				if(rpy.getType()!=CReply::EType::ERROR_CLIENT)
+
+				size_t cmdSeq = startCmdSeq;
+				for (; cmdSeq < lstCommand_.size(); ++cmdSeq)
+				{
+					if (conn->appendCommand(lstCommand_.at(cmdSeq)) == false)
+						break;
+				}
+				if (cmdSeq < lstCommand_.size())
+					continue;
+
+				for (cmdSeq = 0; cmdSeq < lstCommand_.size(); ++cmdSeq)
+				{
+					rpy = std::move(conn->getReply());
+					if (rpy.getType() == CReply::EType::ERROR_CLIENT)
+						break;
+					if (callback != nullptr)
+						callback(rpy);
+				}
+				if (cmdSeq >= lstCommand_.size())
 					break;
+				startCmdSeq = cmdSeq;
 			}
 			
 			lstCommand_.clear();
-			if(callback!=nullptr)
-				callback(rpy);
 			return rpy;	
 		}
 	};
@@ -104,6 +120,8 @@ namespace MCRedis
 				);
 			}
 			~CTaskHolder() = default;
+			CTaskHolder(const CTaskHolder&) = delete;
+			CTaskHolder& operator=(const CTaskHolder&) = delete;
 
 		public:
 			uint64_t	addTask(result_t&& result) noexcept
@@ -160,6 +178,7 @@ namespace MCRedis
 		uint64_t		resultId_ = 0;
 
 	public:
+		CAsyncRunner() = delete;
 		CAsyncRunner(pool_t& pool) : pool_(pool) {}
 		CAsyncRunner(CAsyncRunner&& rhs) : pool_(rhs.pool_) {}
 		~CAsyncRunner()
@@ -218,19 +237,34 @@ namespace MCRedis
 				{
 					CReply rpy;
 					uint32_t tryCount = TRetryCount;
+					size_t startCmdSeq = 0;
+
 					while (tryCount-- > 0)
 					{
 						conn_t conn = std::move(pool.get());
 						if (conn == nullptr || conn->isValid() == false)
 							continue;
-						for (auto&& iter : arg.lstCommand_)
-							conn->appendCommand(iter);
-						rpy = std::move(conn->getReply());
-						if (rpy.getType() != CReply::EType::ERROR_CLIENT)
+
+						size_t cmdSeq = startCmdSeq;
+						for (; cmdSeq < arg.lstCommand_.size(); ++cmdSeq)
+						{
+							if (conn->appendCommand(arg.lstCommand_.at(cmdSeq)) == false)
+								break;
+						}
+						if (cmdSeq < arg.lstCommand_.size())
+							continue;
+
+						for (cmdSeq = 0; cmdSeq < arg.lstCommand_.size(); ++cmdSeq)
+						{
+							rpy = std::move(conn->getReply());
+							if (rpy.getType() == CReply::EType::ERROR_CLIENT)
+								break;
+							if (callback != nullptr)
+								callback(rpy);
+						}
+						if (cmdSeq >= arg.lstCommand_.size())
 							break;
 					}
-					if (callback != nullptr)
-						callback(rpy);
 					return rpy;
 				}
 #ifdef __linux
@@ -245,7 +279,14 @@ namespace MCRedis
 
 		static CTaskHolder& _getTaskHolder()
 		{
+#ifdef __linux
 			static CTaskHolder taskHolder;
+#else  // __linux
+#			pragma warning(push)
+#			pragma warning(disable:4640)
+			static CTaskHolder taskHolder;
+#			pragma warning(pop)
+#endif // __linux
 			return taskHolder;
 		}
 	};
