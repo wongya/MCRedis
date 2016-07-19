@@ -66,6 +66,19 @@ namespace MCRedis
 		}
 
 		template <size_t TIndex, typename T, typename ...TArg>
+		typename std::enable_if<std::is_enum<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg, TArg&&... args)
+		{
+			_expandArgumentStr<TIndex>(std::to_string((uint32_t)arg));
+			_expandArgument<TIndex + 1>(std::forward<TArg>(args)...);
+		}
+
+		template <size_t TIndex, typename T, typename ...TArg>
+		typename std::enable_if<std::is_enum<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg)
+		{
+			_expandArgumentStr<TIndex>(std::to_string((uint32_t)arg));
+		}
+
+		template <size_t TIndex, typename T, typename ...TArg>
 		typename std::enable_if<std::is_same<const char*, typename std::decay<T>::type>::value, void>::type _expandArgument(T&& arg, TArg&&... args)
 		{
 			_expandArgumentStr<TIndex>(std::string(arg));
