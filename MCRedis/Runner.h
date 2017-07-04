@@ -12,6 +12,7 @@ namespace MCRedis
 		using conn_t = typename pool_t::CConnectionRAII;
 		using lstCommand_t = std::vector<CCommand>;
 		using callback_t = std::function<void(CReply&)>;
+		using lstRpy_t = std::vector<CReply>;
 
 	protected :
 		pool_t&			pool_;
@@ -24,19 +25,24 @@ namespace MCRedis
 		CRunner& operator=(const CRunner&) = delete;
 
 	public:
-		CReply	run(CCommand&& cmd, callback_t callback=nullptr) noexcept
+		CReply		run(CCommand&& cmd, callback_t callback=nullptr) noexcept
 		{
 			lstCommand_.push_back(std::forward<CCommand>(cmd));
-			return _run(callback);
+			lstRpy_t rpy(_run(callback));
+			if (rpy.empty())
+				return CReply();
+			return std::move(rpy.at(0));
 		}
 
-		void	append(CCommand&& cmd) noexcept { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
-		CReply	runCommands(callback_t callback=nullptr) noexcept { return _run(callback); }
+		void		append(CCommand&& cmd) noexcept { lstCommand_.push_back(std::forward<CCommand>(cmd)); }
+		lstRpy_t	runCommands(callback_t callback=nullptr) noexcept { return _run(callback); }
 		
 	protected:
-		CReply	_run(std::function<void(CReply&)> callback) noexcept
+		lstRpy_t	_run(std::function<void(CReply&)> callback) noexcept
 		{
-			CReply rpy;
+			lstRpy_t lstRpy;
+			lstRpy.reserve(lstCommand_.size());
+
 			uint32_t tryCount=TRetryCount;
 			size_t startCmdSeq = 0;
 
@@ -57,11 +63,12 @@ namespace MCRedis
 
 				for (cmdSeq = 0; cmdSeq < lstCommand_.size(); ++cmdSeq)
 				{
-					rpy = std::move(conn->getReply());
+					CReply rpy = std::move(conn->getReply());
 					if (rpy.getType() == CReply::EType::ERROR_CLIENT)
 						break;
 					if (callback != nullptr)
 						callback(rpy);
+					lstRpy.push_back(std::move(rpy));
 				}
 				if (cmdSeq >= lstCommand_.size())
 					break;
@@ -69,7 +76,7 @@ namespace MCRedis
 			}
 			
 			lstCommand_.clear();
-			return rpy;	
+			return lstRpy;
 		}
 	};
 
