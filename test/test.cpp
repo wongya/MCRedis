@@ -14,6 +14,7 @@ int main()
 
 	auto fn=[](MCRedis::CConnection* ptr)
 	{
+		ptr->setTimeout(3);
 		ptr->sendCommand(MCRedis::CCommand("select",0));
 		printf("New session allocated\n");
 	};
