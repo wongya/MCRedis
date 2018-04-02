@@ -23,6 +23,8 @@ namespace MCRedis
 
 	public :
 		bool		connect(const char* host, unsigned short port, uint32_t timeoutSec = 0) noexcept;
+		bool		setTimeout(uint32_t timeoutSec) noexcept;
+
 		CReply		sendCommand(CCommand&& command) noexcept;
 		CReply		sendCommand(CCommand& command) noexcept;
 		bool		appendCommand(CCommand&& command) noexcept;

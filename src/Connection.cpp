@@ -52,6 +52,8 @@ namespace MCRedis
 		bool			connect(std::string host, uint16_t port, uint32_t timeoutSec = 0) noexcept;
 		bool			reconnect() noexcept;
 
+		bool			setTimeout(uint32_t timeoutSec) noexcept;
+
 		CReply			sendCommand(CCommand& command) noexcept
 		{
 			redisReply* rawReply=reinterpret_cast<redisReply*>(redisCommandArgv(contextPtr_.get(), (int)command.lstCommand_.size(), command.lstCommand_.data(), command.lstCommandSize_.data()));
@@ -105,6 +107,14 @@ namespace MCRedis
 		return true;
 	}
 
+	bool CConnection::CImpl::setTimeout(uint32_t timeoutSec) noexcept
+	{
+		struct timeval tv;
+		tv.tv_sec = timeoutSec_;
+		tv.tv_usec = 0;
+		return redisSetTimeout(contextPtr_.get(), tv) != REDIS_ERR;
+	}
+
 	CConnection::CConnection()
 		: impl_(new CConnection::CImpl)
 	{
@@ -115,6 +125,11 @@ namespace MCRedis
 	bool CConnection::connect(const char* host, unsigned short port, uint32_t timeoutSec) noexcept
 	{
 		return impl_->connect(host, port, timeoutSec);
+	}
+
+	bool CConnection::setTimeout(uint32_t timeoutSec) noexcept
+	{
+		return impl_->setTimeout(timeoutSec);
 	}
 
 	CReply CConnection::sendCommand(CCommand&& command) noexcept
