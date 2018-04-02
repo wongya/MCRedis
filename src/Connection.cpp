@@ -9,6 +9,13 @@
 #	pragma warning(pop)
 #endif // _MSC_VER
 
+#ifdef	__linux
+#	include <sys/time.h>
+#else	//__linux
+#	include <winsock2.h>
+#endif	//__linux
+
+
 namespace MCRedis
 {
 	class CConnection::CImpl
@@ -34,13 +41,15 @@ namespace MCRedis
 
 		std::string		host_;
 		uint16_t		port_;
+		
+		uint32_t		timeoutSec_;
 
 	public :
 		CImpl() {}
 		~CImpl() = default;
 
 	public :
-		bool			connect(std::string host, uint16_t port) noexcept;
+		bool			connect(std::string host, uint16_t port, uint32_t timeoutSec = 0) noexcept;
 		bool			reconnect() noexcept;
 
 		CReply			sendCommand(CCommand& command) noexcept
@@ -70,10 +79,11 @@ namespace MCRedis
 		bool			isValid() const noexcept { return contextPtr_ != nullptr; }
 	};
 
-	bool CConnection::CImpl::connect(std::string host, uint16_t port) noexcept
+	bool CConnection::CImpl::connect(std::string host, uint16_t port, uint32_t timeoutSec) noexcept
 	{
 		host_ = host;
 		port_ = port;
+		timeoutSec_ = timeoutSec;
 		return reconnect();
 	}
 
@@ -85,6 +95,13 @@ namespace MCRedis
 			contextPtr_.reset();
 			return false;
 		}
+		if (timeoutSec_ != 0)
+		{
+			struct timeval tv;
+			tv.tv_sec = timeoutSec_;
+			tv.tv_usec = 0;
+			redisSetTimeout(contextPtr_.get(), tv);
+		}
 		return true;
 	}
 
@@ -95,9 +112,9 @@ namespace MCRedis
 
 	CConnection::~CConnection() = default;
 
-	bool CConnection::connect(const char* host, unsigned short port) noexcept
+	bool CConnection::connect(const char* host, unsigned short port, uint32_t timeoutSec) noexcept
 	{
-		return impl_->connect(host, port);
+		return impl_->connect(host, port, timeoutSec);
 	}
 
 	CReply CConnection::sendCommand(CCommand&& command) noexcept

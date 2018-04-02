@@ -22,7 +22,7 @@ namespace MCRedis
 		CConnection& operator=(const CConnection&)=delete;
 
 	public :
-		bool		connect(const char* host, unsigned short port) noexcept;
+		bool		connect(const char* host, unsigned short port, uint32_t timeoutSec = 0) noexcept;
 		CReply		sendCommand(CCommand&& command) noexcept;
 		CReply		sendCommand(CCommand& command) noexcept;
 		bool		appendCommand(CCommand&& command) noexcept;
