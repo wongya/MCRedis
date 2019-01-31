@@ -24,6 +24,19 @@ namespace MCRedis
 			std::srand(std::random_device()());
 		}
 
+		CSentinelSupport::CSentinelSupport(std::vector<std::tuple<std::string, uint16_t>> lstSentinel, std::string masterName, ERole role, callback_t callback /*= nullptr*/)
+			: masterName_(masterName)
+			, role_(role)
+			, callback_(callback)
+		{
+			if (lstSentinel.empty() == true)
+				return;
+
+			std::copy(lstSentinel.begin(), lstSentinel.end(), std::back_inserter(lstSentinel_));
+
+			std::srand(std::random_device()());
+		}
+
 		CConnection* CSentinelSupport::getConnection() const noexcept
 		{
 			if(lstSentinel_.empty()==true)

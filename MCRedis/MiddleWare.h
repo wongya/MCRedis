@@ -54,6 +54,7 @@ namespace MCRedis
 
 		public:
 			CSentinelSupport(std::string hostName, uint16_t port, std::string masterName, ERole role, callback_t callback = nullptr);
+			CSentinelSupport(std::vector<std::tuple<std::string , uint16_t>> lstSentinel, std::string masterName, ERole role, callback_t callback = nullptr);
 			~CSentinelSupport() = default;
 
 		public:

@@ -19,7 +19,8 @@ int main()
 		printf("New session allocated\n");
 	};
 	MCRedis::MiddleWare::CDefaultMiddleWare mw1("redis-test.sk8irc.0001.apn2.cache.amazonaws.com",6379,fn);
-	MCRedis::MiddleWare::CSentinelSupport mw2("redis-test.sk8irc.0001.apn2.cache.amazonaws.com", 26379, "mymaster", MCRedis::MiddleWare::CSentinelSupport::ERole::MASTER, fn);
+
+	MCRedis::MiddleWare::CSentinelSupport mw2({ std::make_tuple("redis-test.sk8irc.0001.apn2.cache.amazonaws.com", 26379) }, "mymaster", MCRedis::MiddleWare::CSentinelSupport::ERole::MASTER, fn);
 	MCRedis::CConnectionPool<std::mutex,decltype(mw2), decltype(mw1)> redisPool(std::move(mw2), std::move(mw1));
 	if(redisPool.create(1)==false)
 		printf("create redis connection pool failed\n");
