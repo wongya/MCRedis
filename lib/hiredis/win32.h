@@ -10,22 +10,6 @@
 #define va_copy(d,s) ((d) = (s))
 #endif
 
-#ifndef	EINPROGRESS
-#define	EINPROGRESS	WSAEWOULDBLOCK
-#endif
-
-#ifndef	EHOSTUNREACH
-#define	EHOSTUNREACH WSAEINPROGRESS
-#endif
-
-#ifndef	ETIMEDOUT
-#define ETIMEDOUT WSAETIMEDOUT
-#endif
-
-#ifndef	EADDRNOTAVAIL
-#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#endif
-
 #ifndef snprintf
 #define snprintf c99_snprintf
 
@@ -53,6 +37,10 @@ __inline int c99_snprintf(char* str, size_t size, const char* format, ...)
     return count;
 }
 #endif
+#endif /* _MSC_VER */
 
-#endif
-#endif
+#ifdef _WIN32
+#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
+#endif /* _WIN32 */
+
+#endif /* _WIN32_HELPER_INCLUDE */

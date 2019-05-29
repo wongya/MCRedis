@@ -9,6 +9,11 @@
 #	pragma warning(pop)
 #endif // _MSC_VER
 
+#if defined(ERROR)
+#	define ERROR_REMOVED_IN_SRC	ERROR
+#	undef ERROR
+#endif
+
 namespace MCRedis
 {
 	CReply::CReply(redisReply* rawReply) noexcept
@@ -48,3 +53,7 @@ namespace MCRedis
 		str_ = strError;
 	}
 }
+
+#ifdef ERROR_REMOVED_IN_SRC
+#	define ERROR	ERROR_REMOVED_IN_SRC
+#endif // ERROR_REMOVED_IN_SRC
