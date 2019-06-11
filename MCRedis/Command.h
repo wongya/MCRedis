@@ -38,6 +38,10 @@ namespace MCRedis
 #endif	//__linux
 		~CCommand() = default;
 
+	public : 
+		std::pair<const char*, size_t> getCommand() const { return lstCommand_.empty() == true ? std::make_pair(nullptr, 0) : std::make_pair(lstCommand_[0], lstCommandSize_[0]); }
+		std::pair<const char*, size_t> getKey() const { return lstCommand_.size() < 2 ? std::make_pair(nullptr, 0) : std::make_pair(lstCommand_[1], lstCommandSize_[1]); }
+
 	protected:
 		template <size_t TIndex, typename T, typename ...TArg>
 		typename std::enable_if<std::is_same<std::string, typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value, void>::type _expandArgument(T&& arg, TArg&&... args)

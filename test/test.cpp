@@ -5,6 +5,29 @@
 #	include <winsock2.h>
 #endif //WIN32
 
+void redisClientTest()
+{
+	MCRedis::MiddleWare::CClusterSupport mw("192.168.244.128", 6379, 3);
+	MCRedis::CConnectionPool<std::mutex, decltype(mw)> redisClient(std::move(mw));
+	redisClient.create(10);
+
+	auto rpy = redisClient.sendCommand(MCRedis::CCommand("SET", "{1}2345", 1));
+	//if (rpy.getType() != MCRedis::CReply::EType::INTEGER)
+	//	return;
+	//rpy = redisClient.sendCommand(MCRedis::CCommand("GET", "{1}2345"));
+	//if (rpy.getType() != MCRedis::CReply::EType::INTEGER)
+	//	return;
+
+
+	MCRedis::CRunner<decltype(redisClient)> runner(redisClient);
+	rpy = runner.run(MCRedis::CCommand("select", 0));
+	printf("rpy %s\n", rpy.getStr().c_str());
+
+	redisClient.clear();
+
+	exit(0);
+}
+
 int main()
 {
 #ifdef WIN32
@@ -12,17 +35,19 @@ int main()
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif // WIN32
 
+	//redisClientTest();
+
 	auto fn=[](MCRedis::CConnection* ptr)
 	{
 		ptr->setTimeout(3);
 		ptr->sendCommand(MCRedis::CCommand("select",0));
 		printf("New session allocated\n");
 	};
-	MCRedis::MiddleWare::CDefaultMiddleWare mw1("redis-test.sk8irc.0001.apn2.cache.amazonaws.com",6379,fn);
+	MCRedis::MiddleWare::CDefaultMiddleWare mw1("192.168.244.128",6000,fn);
 
-	MCRedis::MiddleWare::CSentinelSupport mw2({ std::make_tuple("redis-test.sk8irc.0001.apn2.cache.amazonaws.com", 26379) }, "mymaster", MCRedis::MiddleWare::CSentinelSupport::ERole::MASTER, fn);
+	MCRedis::MiddleWare::CSentinelSupport mw2({ std::make_tuple("192.168.244.128", 26379) }, "mymaster", MCRedis::MiddleWare::CSentinelSupport::ERole::MASTER, fn);
 	MCRedis::CConnectionPool<std::mutex,decltype(mw2), decltype(mw1)> redisPool(std::move(mw2), std::move(mw1));
-	if(redisPool.create(1)==false)
+	if(redisPool.create(2)==false)
 		printf("create redis connection pool failed\n");
 
 	{

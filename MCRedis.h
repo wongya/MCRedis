@@ -19,6 +19,8 @@
 #	endif
 #endif // _MSC_VER
 
+#include "MCRedis/detail/NullMutex.h"
+
 #include "MCRedis/Command.h"
 #include "MCRedis/Reply.h"
 #include "MCRedis/Connection.h"

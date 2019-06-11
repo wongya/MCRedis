@@ -91,7 +91,11 @@ namespace MCRedis
 
 	bool CConnection::CImpl::reconnect() noexcept
 	{
-		contextPtr_.reset(redisConnect(host_.c_str(), port_));
+		struct timeval tv;
+		tv.tv_sec = timeoutSec_;
+		tv.tv_usec = 0;
+		contextPtr_.reset(redisConnectWithTimeout(host_.c_str(), port_, tv));
+
 		if (contextPtr_->err != REDIS_OK)
 		{
 			contextPtr_.reset();
@@ -116,7 +120,7 @@ namespace MCRedis
 	}
 
 	CConnection::CConnection()
-		: impl_(new CConnection::CImpl)
+		: impl_(new CConnection::CImpl), slotRange_({ 0,0 })
 	{
 	}
 
