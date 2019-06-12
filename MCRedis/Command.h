@@ -31,6 +31,7 @@ namespace MCRedis
 		}
 #ifdef __linux
 #else  //__linux
+#	if (_MSC_VER < 1910) //under vs2015
 		CCommand(const CCommand& rhs)
 			: lstCommandSize_(rhs.lstCommandSize_)
 			, lstCommandBuffer_(rhs.lstCommandBuffer_)
@@ -39,6 +40,7 @@ namespace MCRedis
 			for (auto& elem : lstCommandBuffer_)
 				lstCommand_.push_back(elem.c_str());
 		}
+#	endif //(_MSC_VER >= 1910)
 #endif	//__linux
 		~CCommand() = default;
 
