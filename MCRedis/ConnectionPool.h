@@ -15,7 +15,7 @@ namespace MCRedis
 		class CConnectionRAII
 		{
 		protected:
-			CConnectionPool*		parent_;
+			CConnectionPool*	parent_;
 			conn_ptr_t			connPtr_;
 
 		public:
@@ -59,16 +59,10 @@ namespace MCRedis
 			uint32_t slot = _getSlot(nullptr, 0);
 			return std::move(_get(slot));
 		}
-
-	public:
-		CReply					sendCommand(CCommand&& cmd) noexcept
+		CConnectionRAII			get(const char* key, size_t keyLen)
 		{
-			auto cmdKey = cmd.getKey();
-			uint32_t slot = _getSlot(cmdKey.first, cmdKey.second);
-			auto conn = _get(slot);
-			if (conn == nullptr)
-				return CReply(-1, "No connections");
-			return std::move(conn->sendCommand(std::move(cmd)));
+			uint32_t slot = _getSlot(key, keyLen);
+			return std::move(_get(slot));
 		}
 
 	protected:

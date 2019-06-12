@@ -15,6 +15,13 @@
 #	include <winsock2.h>
 #endif	//__linux
 
+#ifdef max
+#	undef max
+#endif // max
+
+#ifdef min
+#	undef min
+#endif // min
 
 namespace MCRedis
 {
@@ -120,7 +127,7 @@ namespace MCRedis
 	}
 
 	CConnection::CConnection()
-		: impl_(new CConnection::CImpl), slotRange_({ 0,0 })
+		: impl_(new CConnection::CImpl), slotRange_(std::make_tuple(0, std::numeric_limits<uint32_t>::max()))
 	{
 	}
 

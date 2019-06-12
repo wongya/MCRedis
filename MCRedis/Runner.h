@@ -4,6 +4,64 @@
 
 namespace MCRedis
 {
+	namespace _detail
+	{
+		template <typename pool_t, uint32_t TRetryCount>
+		CReply runSingleCommand(pool_t& pool, CCommand& cmd)
+		{
+			auto cmdKey = cmd.getKey();
+			CReply rpy;
+
+			uint32_t tryCount = TRetryCount;
+			while (tryCount-- > 0)
+			{
+				auto conn = pool.get(cmdKey.first, cmdKey.second);
+				if (conn == nullptr || conn->isValid() == false)
+					continue;
+				rpy = std::move(conn->sendCommand(cmd));
+			}
+			return rpy;
+		}
+
+		template <typename pool_t, typename conn_t, typename lstCommand_t, uint32_t TRetryCount>
+		std::vector<std::pair<conn_t, lstCommand_t>> mapCommandPerNode(pool_t& pool, lstCommand_t& lstCommand)
+		{
+			std::tuple<uint32_t, uint32_t> prevSlotRange = { 0, 0 };
+			std::vector<std::pair<conn_t, lstCommand_t>> lstNodeCommand;
+			for (auto& cmd : lstCommand)
+			{
+				auto cmdKey = cmd.getKey();
+
+				uint32_t tryCount = TRetryCount;
+				while (tryCount-- > 0)
+				{
+					conn_t conn = pool.get(cmdKey.first, cmdKey.second);
+					if (conn == nullptr || conn->isValid() == false)
+					{
+						if (tryCount == 0)
+							return{};
+
+						std::this_thread::yield();
+						std::this_thread::sleep_for(std::chrono::milliseconds(100));
+						continue;
+					}
+
+					if (conn->getSlotRange() != prevSlotRange)
+					{
+						prevSlotRange = conn->getSlotRange();
+						lstCommand_t lstTmpCommand;
+						lstTmpCommand.emplace_back(std::move(cmd));
+						lstNodeCommand.emplace_back(std::make_pair(std::move(conn), std::move(lstTmpCommand)));
+					}
+					else
+						lstNodeCommand.rbegin()->second.push_back(std::move(cmd));
+					break;
+				}
+			}
+			return lstNodeCommand;
+		};
+	}
+
 	template <typename TConnectionPool,size_t TRetryCount=5>
 	class CRunner
 	{
@@ -43,38 +101,45 @@ namespace MCRedis
 			lstRpy_t lstRpy;
 			lstRpy.reserve(lstCommand_.size());
 
-			uint32_t tryCount=TRetryCount;
-			size_t startCmdSeq = 0;
-
-			while (tryCount-- > 0)
+			if (lstCommand_.size() == 1)
 			{
-				conn_t conn=pool_.get();
-				if (conn == nullptr || conn->isValid() == false)
-					continue;
+				auto rpy = _detail::runSingleCommand<pool_t, TRetryCount>(pool_, lstCommand_[0]);
+				if (callback != nullptr)
+					callback(rpy);
+				lstRpy.push_back(std::move(rpy));
+				return lstRpy;
+			}
 
-				size_t cmdSeq = startCmdSeq;
-				for (; cmdSeq < lstCommand_.size(); ++cmdSeq)
+			auto lstNodeCommand = _detail::mapCommandPerNode<pool_t, conn_t, lstCommand_t, TRetryCount>(pool_, lstCommand_);
+			if (lstNodeCommand.empty() == true)
+			{
+				lstRpy.resize(lstCommand_.size());
+				return lstRpy;
+			}
+
+			for (auto& elem : lstNodeCommand)
+			{
+				auto conn = std::move(elem.first);
+				auto& lstCmd = elem.second;
+
+				for (auto& cmd : lstCmd)
 				{
-					if (conn->appendCommand(lstCommand_.at(cmdSeq)) == false)
-						break;
+					if (conn->appendCommand(cmd) == false)
+					{
+						lstRpy.resize(lstCommand_.size());
+						return lstRpy;
+					}
 				}
-				if (cmdSeq < lstCommand_.size())
-					continue;
 
-				for (cmdSeq = 0; cmdSeq < lstCommand_.size(); ++cmdSeq)
+				for (size_t x = 0; x < lstCmd.size(); ++x)
 				{
 					CReply rpy = std::move(conn->getReply());
-					if (rpy.getType() == CReply::EType::ERROR_CLIENT)
-						break;
 					if (callback != nullptr)
 						callback(rpy);
 					lstRpy.push_back(std::move(rpy));
 				}
-				if (cmdSeq >= lstCommand_.size())
-					break;
-				startCmdSeq = cmdSeq;
 			}
-			
+
 			lstCommand_.clear();
 			return lstRpy;
 		}
@@ -242,35 +307,36 @@ namespace MCRedis
 				[](ArgWrapper& arg, callback_t callback, pool_t& pool) -> CReply
 #endif //__linux
 				{
-					CReply rpy;
-					uint32_t tryCount = TRetryCount;
-					size_t startCmdSeq = 0;
-
-					while (tryCount-- > 0)
+					if (arg.lstCommand_.size() == 1)
 					{
-						conn_t conn = std::move(pool.get());
-						if (conn == nullptr || conn->isValid() == false)
-							continue;
+						auto rpy = _detail::runSingleCommand<pool_t, TRetryCount>(pool, arg.lstCommand_[0]);
+						if (callback != nullptr)
+							callback(rpy);
+						return rpy;
+					}
 
-						size_t cmdSeq = startCmdSeq;
-						for (; cmdSeq < arg.lstCommand_.size(); ++cmdSeq)
+					CReply rpy;
+					auto lstNodeCommand = _detail::mapCommandPerNode<pool_t, conn_t, lstCommand_t, TRetryCount>(pool, arg.lstCommand_);
+					if (lstNodeCommand.empty() == true)
+						return rpy;
+
+					for (auto& elem : lstNodeCommand)
+					{
+						auto conn = std::move(elem.first);
+						auto& lstCmd = elem.second;
+
+						for (auto& cmd : lstCmd)
 						{
-							if (conn->appendCommand(arg.lstCommand_.at(cmdSeq)) == false)
-								break;
+							if (conn->appendCommand(cmd) == false)
+								return rpy;
 						}
-						if (cmdSeq < arg.lstCommand_.size())
-							continue;
 
-						for (cmdSeq = 0; cmdSeq < arg.lstCommand_.size(); ++cmdSeq)
+						for (size_t x = 0; x < lstCmd.size(); ++x)
 						{
 							rpy = std::move(conn->getReply());
-							if (rpy.getType() == CReply::EType::ERROR_CLIENT)
-								break;
 							if (callback != nullptr)
 								callback(rpy);
 						}
-						if (cmdSeq >= arg.lstCommand_.size())
-							break;
 					}
 					return rpy;
 				}

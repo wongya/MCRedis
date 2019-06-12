@@ -11,7 +11,16 @@ void redisClientTest()
 	MCRedis::CConnectionPool<std::mutex, decltype(mw)> redisClient(std::move(mw));
 	redisClient.create(10);
 
-	auto rpy = redisClient.sendCommand(MCRedis::CCommand("SET", "{1}2345", 1));
+	MCRedis::CRunner<decltype(redisClient)> runner(redisClient);
+	runner.append(MCRedis::CCommand("SET", "{12345}345", 1));
+	runner.append(MCRedis::CCommand("GET", "{qqqqq}345"));
+	runner.append(MCRedis::CCommand("SET", "{1}2345", 1));
+	runner.append(MCRedis::CCommand("GET", "{1}2345"));
+	runner.append(MCRedis::CCommand("SET", "{hehe}2345", 1));
+	runner.append(MCRedis::CCommand("GET", "{hehe}2345"));
+	auto rpy = runner.runCommands();
+
+	//redisClient.sendCommand(MCRedis::CCommand("SET", "{1}2345", 1));
 	//if (rpy.getType() != MCRedis::CReply::EType::INTEGER)
 	//	return;
 	//rpy = redisClient.sendCommand(MCRedis::CCommand("GET", "{1}2345"));
@@ -19,9 +28,9 @@ void redisClientTest()
 	//	return;
 
 
-	MCRedis::CRunner<decltype(redisClient)> runner(redisClient);
-	rpy = runner.run(MCRedis::CCommand("select", 0));
-	printf("rpy %s\n", rpy.getStr().c_str());
+	//MCRedis::CRunner<decltype(redisClient)> runner(redisClient);
+	//rpy = runner.run(MCRedis::CCommand("select", 0));
+	//printf("rpy %s\n", rpy.getStr().c_str());
 
 	redisClient.clear();
 
@@ -35,7 +44,7 @@ int main()
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif // WIN32
 
-	//redisClientTest();
+	redisClientTest();
 
 	auto fn=[](MCRedis::CConnection* ptr)
 	{

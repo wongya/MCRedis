@@ -22,18 +22,22 @@ namespace MCRedis
 			_expandArgument<0>(std::forward<TArg>(args)...);
 		}
 		CCommand(CCommand&& rhs)
-			: lstCommand_(std::forward<decltype(rhs.lstCommand_)>(rhs.lstCommand_))
-			, lstCommandSize_(std::forward<decltype(rhs.lstCommandSize_)>(rhs.lstCommandSize_))
+			: lstCommandSize_(std::forward<decltype(rhs.lstCommandSize_)>(rhs.lstCommandSize_))
 			, lstCommandBuffer_(std::forward<decltype(rhs.lstCommandBuffer_)>(rhs.lstCommandBuffer_))
 		{
+			lstCommand_.reserve(rhs.lstCommandBuffer_.size());
+			for (auto& elem : lstCommandBuffer_)
+				lstCommand_.push_back(elem.c_str());
 		}
 #ifdef __linux
 #else  //__linux
 		CCommand(const CCommand& rhs)
-			: lstCommand_(rhs.lstCommand_)
-			, lstCommandSize_(rhs.lstCommandSize_)
+			: lstCommandSize_(rhs.lstCommandSize_)
 			, lstCommandBuffer_(rhs.lstCommandBuffer_)
 		{
+			lstCommand_.reserve(rhs.lstCommandBuffer_.size());
+			for (auto& elem : lstCommandBuffer_)
+				lstCommand_.push_back(elem.c_str());
 		}
 #endif	//__linux
 		~CCommand() = default;
