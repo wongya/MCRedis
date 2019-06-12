@@ -11,14 +11,21 @@ void redisClientTest()
 	MCRedis::CConnectionPool<std::mutex, decltype(mw)> redisClient(std::move(mw));
 	redisClient.create(10);
 
-	MCRedis::CRunner<decltype(redisClient)> runner(redisClient);
+	//MCRedis::CRunner<decltype(redisClient)> runner(redisClient);
+	MCRedis::CAsyncRunner<decltype(redisClient)> runner(redisClient);
 	runner.append(MCRedis::CCommand("SET", "{12345}345", 1));
 	runner.append(MCRedis::CCommand("GET", "{qqqqq}345"));
 	runner.append(MCRedis::CCommand("SET", "{1}2345", 1));
 	runner.append(MCRedis::CCommand("GET", "{1}2345"));
 	runner.append(MCRedis::CCommand("SET", "{hehe}2345", 1));
 	runner.append(MCRedis::CCommand("GET", "{hehe}2345"));
-	auto rpy = runner.runCommands();
+	/*auto rpy = */runner.runCommands(
+		[](MCRedis::CReply& rpy)
+		{
+			printf("rpy %s\n", rpy.getStr().c_str());
+		}
+	);
+	runner.getResult();
 
 	//redisClient.sendCommand(MCRedis::CCommand("SET", "{1}2345", 1));
 	//if (rpy.getType() != MCRedis::CReply::EType::INTEGER)
