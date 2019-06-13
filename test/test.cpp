@@ -5,6 +5,7 @@
 #	include <winsock2.h>
 #endif //WIN32
 
+
 void redisClientTest()
 {
 	MCRedis::MiddleWare::CClusterSupport mw("192.168.244.128", 6379, 3);
