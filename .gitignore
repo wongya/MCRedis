@@ -7,3 +7,5 @@ vs20*/vs.VC.opendb
 vs20*/vs.sdf
 vs20*/test/x64/
 vs20*/MCRedis/x64/
+*.obj
+*.pdb
