@@ -12,6 +12,7 @@ namespace MCRedis
 			, role_(role)
 			, timeoutSec_(timeoutSec)
 			, callback_(callback)
+			, timeoutSec_(timeoutSec)
 		{
 			std::unique_ptr<CConnection> p(new CConnection);
 			if (p->connect(hostName.c_str(), port, timeoutSec_) == false)
@@ -36,7 +37,21 @@ namespace MCRedis
 			if (lstSentinel.empty() == true)
 				return;
 
-			std::copy(lstSentinel.begin(), lstSentinel.end(), std::back_inserter(lstSentinel_));
+			for (auto& host : lstSentinel)
+			{
+				lstSentinel_.push_back(host);
+
+				std::unique_ptr<CConnection> p(new CConnection);
+				if (p->connect(std::get<0>(host).c_str(), std::get<1>(host), timeoutSec_) == false)
+					continue;
+
+				CReply rpy = p->sendCommand(CCommand("SENTINEL", "sentinels", masterName_));
+				if (rpy.getType() != CReply::EType::ARRAY)
+				{
+					lstSentinel_.clear();
+					return;
+				}
+			}
 
 			std::srand(std::random_device()());
 		}
