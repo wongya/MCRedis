@@ -19,7 +19,7 @@ namespace MCRedis
 			~CDefaultMiddleWare() = default;
 
 		public:
-			CConnection*	getConnection(uint32_t slot = 0) const noexcept
+			CConnection*	getConnection(uint32_t /*slot*/ = 0) const noexcept
 			{	
 				CConnection* p = new CConnection;
 				if (p->connect(hostName_.c_str(), port_, timeoutSec_) == false)
@@ -76,8 +76,8 @@ namespace MCRedis
 			uint32_t		timeoutSec_;
 
 		public : 
-			CClusterSupport(std::string hostName, uint16_t port, uint32_t timeoutSec_);
-			CClusterSupport(lstHost_t lstHost, uint32_t timeoutSec_);
+			CClusterSupport(std::string hostName, uint16_t port, uint32_t timeoutSec_ = 3);
+			CClusterSupport(lstHost_t lstHost, uint32_t timeoutSec_ = 3);
 			~CClusterSupport() = default;
 
 		public:
