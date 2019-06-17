@@ -12,7 +12,6 @@ namespace MCRedis
 			, role_(role)
 			, timeoutSec_(timeoutSec)
 			, callback_(callback)
-			, timeoutSec_(timeoutSec)
 		{
 			std::unique_ptr<CConnection> p(new CConnection);
 			if (p->connect(hostName.c_str(), port, timeoutSec_) == false)
