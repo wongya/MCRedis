@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="헤더 파일\detail">
+      <UniqueIdentifier>{80a89b54-db1b-4d15-a92d-f3c45b5aa440}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Connection.cpp">
@@ -39,6 +42,9 @@
     </ClInclude>
     <ClInclude Include="..\..\MCRedis\Runner.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MCRedis\detail\NullMutex.h">
+      <Filter>헤더 파일\detail</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

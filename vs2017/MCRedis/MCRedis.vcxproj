@@ -121,6 +121,7 @@
     <ClInclude Include="..\..\MCRedis\Command.h" />
     <ClInclude Include="..\..\MCRedis\Connection.h" />
     <ClInclude Include="..\..\MCRedis\ConnectionPool.h" />
+    <ClInclude Include="..\..\MCRedis\detail\NullMutex.h" />
     <ClInclude Include="..\..\MCRedis\MiddleWare.h" />
     <ClInclude Include="..\..\MCRedis\Reply.h" />
     <ClInclude Include="..\..\MCRedis\Runner.h" />

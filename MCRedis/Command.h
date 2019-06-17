@@ -21,7 +21,7 @@ namespace MCRedis
 
 			_expandArgument<0>(std::forward<TArg>(args)...);
 		}
-		CCommand(CCommand&& rhs)
+		CCommand(CCommand&& rhs) noexcept
 			: lstCommandSize_(std::forward<decltype(rhs.lstCommandSize_)>(rhs.lstCommandSize_))
 			, lstCommandBuffer_(std::forward<decltype(rhs.lstCommandBuffer_)>(rhs.lstCommandBuffer_))
 		{
@@ -30,6 +30,8 @@ namespace MCRedis
 				lstCommand_.push_back(elem.c_str());
 		}
 #ifdef __linux
+		CCommand(const CCommand&) = delete;
+		void operator=(const CCommand&) = delete;
 #else  //__linux
 #	if (_MSC_VER < 1910) //under vs2015
 		CCommand(const CCommand& rhs)
@@ -40,7 +42,10 @@ namespace MCRedis
 			for (auto& elem : lstCommandBuffer_)
 				lstCommand_.push_back(elem.c_str());
 		}
-#	endif //(_MSC_VER >= 1910)
+#	else //(_MSC_VER < 1910)
+		CCommand(const CCommand&) = delete;
+		void operator=(const CCommand&) = delete;
+#	endif //(_MSC_VER < 1910)
 #endif	//__linux
 		~CCommand() = default;
 

@@ -27,6 +27,10 @@ namespace MCRedis
 		int64_t			integer_ = 0;
 		lstReply_t		lstReply_;
 
+	protected:
+		CReply(const CReply&) = delete;
+		void operator=(const CReply&) = delete;
+
 	public:
 		CReply() = default;
 		CReply(redisReply* rawReply) noexcept;

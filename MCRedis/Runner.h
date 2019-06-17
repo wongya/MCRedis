@@ -1,6 +1,10 @@
 #pragma once
 
-#include "../MCRedis.h"
+#include "Command.h"
+#include "Reply.h"
+#include "Connection.h"
+#include "MiddleWare.h"
+#include "ConnectionPool.h"
 
 namespace MCRedis
 {

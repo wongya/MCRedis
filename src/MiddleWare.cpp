@@ -10,8 +10,8 @@ namespace MCRedis
 		CSentinelSupport::CSentinelSupport(std::string hostName, uint16_t port, std::string masterName, ERole role, callback_t callback/* = nullptr*/, uint32_t timeoutSec /*= 3*/)
 			: masterName_(masterName)
 			, role_(role)
-			, timeoutSec_(timeoutSec)
 			, callback_(callback)
+			, timeoutSec_(timeoutSec)
 		{
 			std::unique_ptr<CConnection> p(new CConnection);
 			if (p->connect(hostName.c_str(), port, timeoutSec_) == false)
@@ -30,8 +30,8 @@ namespace MCRedis
 		CSentinelSupport::CSentinelSupport(std::vector<std::tuple<std::string, uint16_t>> lstSentinel, std::string masterName, ERole role, callback_t callback /*= nullptr*/, uint32_t timeoutSec /*= 3*/)
 			: masterName_(masterName)
 			, role_(role)
-			, timeoutSec_(timeoutSec)
 			, callback_(callback)
+			, timeoutSec_(timeoutSec)
 		{
 			if (lstSentinel.empty() == true)
 				return;

@@ -15,7 +15,7 @@ namespace MCRedis
 			callback_t		callback_;
 
 		public:
-			CDefaultMiddleWare(std::string hostName, uint16_t port, callback_t callback, uint32_t timeoutSec = 3) : hostName_(hostName), port_(port), callback_(callback), timeoutSec_(timeoutSec) {}
+			CDefaultMiddleWare(std::string hostName, uint16_t port, callback_t callback, uint32_t timeoutSec = 3) : hostName_(hostName), port_(port), timeoutSec_(timeoutSec), callback_(callback) {}
 			~CDefaultMiddleWare() = default;
 
 		public:
