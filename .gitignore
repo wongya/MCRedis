@@ -12,3 +12,4 @@ vs20*/MCRedis/x64/
 vs2017/.vs/vs/v15/.suo
 vs2017/.vs/
 vs2017/x64/Debug/
+*.user
