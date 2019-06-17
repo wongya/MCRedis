@@ -133,13 +133,13 @@ namespace MCRedis
 
 	namespace MiddleWare
 	{
-		CClusterSupport::CClusterSupport(std::string hostName, uint16_t port, uint32_t timeoutSec)
+		CClusterSupport::CClusterSupport(std::string hostName, uint16_t port, uint32_t timeoutSec /*= 3*/)
 		{
 			timeoutSec_ = timeoutSec;
 			lstHost_.push_back(std::make_tuple(hostName, port));
 		}
 
-		CClusterSupport::CClusterSupport(lstHost_t lstHost, uint32_t timeoutSec)
+		CClusterSupport::CClusterSupport(lstHost_t lstHost, uint32_t timeoutSec /*= 3*/)
 		{
 			timeoutSec_ = timeoutSec;
 			std::copy(lstHost.begin(), lstHost.end(), std::back_inserter(lstHost_));
