@@ -142,71 +142,56 @@ namespace MCRedis
 		CClusterSupport::CClusterSupport(lstHost_t lstHost, uint32_t timeoutSec /*= 3*/)
 		{
 			timeoutSec_ = timeoutSec;
-			std::copy(lstHost.begin(), lstHost.end(), std::back_inserter(lstHost_));
+
+			if (lstHost.empty() == true)
+				return;
+
+			for (auto& host : lstHost)
+			{
+				lstHost_.push_back(host);
+
+				std::unique_ptr<CConnection> p(new CConnection);
+				if (p->connect(std::get<0>(host).c_str(), std::get<1>(host), timeoutSec_) == false)
+					continue;
+
+				CReply rpy = p->sendCommand(CCommand("CLUSTER", "info"));
+				if (rpy.getType() != CReply::EType::STRING)
+				{
+					lstHost_.clear();
+					return;
+				}
+			}
+		}
+
+		std::vector<CConnection*> CClusterSupport::create(size_t num) const noexcept
+		{
+			auto lstNode = _getNodes();
+
+			std::vector<CConnection*> lstConn;
+			lstConn.reserve(num * lstNode.size());
+			for (auto node : lstNode)
+			{
+				uint32_t beginSlotReange = std::get<0>(node);
+				uint32_t endSlotReange = std::get<1>(node);
+				std::string masterIp = std::get<2>(node);
+				uint16_t masterPort = std::get<3>(node);
+
+				for (size_t x = 0; x < num; ++x)
+				{
+					CConnection* newConnection = new CConnection;
+					if (newConnection->connect(masterIp.c_str(), masterPort, timeoutSec_) == true)
+					{
+						newConnection->setSlotRange(beginSlotReange, endSlotReange);
+						lstConn.push_back(newConnection);
+					}
+				}
+			}
+			return lstConn;
 		}
 
 		CConnection* CClusterSupport::getConnection(uint32_t slot) const noexcept
 		{
-			using statusMap_t = std::map<std::string, std::string>;
-			auto fnToStatusMap = [](const std::string& str) -> statusMap_t
-			{
-				statusMap_t statusMap;
-
-				std::istringstream iss(str);
-				std::string line;
-				while (std::getline(iss, line))
-				{
-					if (line.empty() == true || line.at(0) == '#' || line.at(0) == '\r')
-						continue;
-					auto pos = line.find_first_of(':');
-					if (pos == std::string::npos)
-						continue;
-					
-					statusMap.insert(statusMap_t::value_type(line.substr(0, pos), line.substr(pos + 1, line.size() - (pos + 2))));
-				}
-				return statusMap;
-			};
-
-			std::unique_ptr<CConnection> conn;
-			for (auto host : lstHost_)
-			{
-				CConnection* connection = new CConnection();
-				if (connection->connect(std::get<0>(host).c_str(), std::get<1>(host), timeoutSec_) == true)
-				{
-					conn.reset(connection);
-					break;
-				}
-			}
-			if (conn == nullptr)
-				return nullptr;
-
-			std::vector<std::tuple<uint32_t, uint32_t, std::string, uint16_t>> lstNode;
-			{
-				auto rpy = conn->sendCommand(CCommand("CLUSTER", "info"));
-				if (rpy.getType() != CReply::EType::STRING)
-					return nullptr;
-
-				auto infoStatus = fnToStatusMap(rpy.getStr());
-				auto iter = infoStatus.find("cluster_state");
-				if (iter == infoStatus.end() || iter->second != "ok")
-					return nullptr;
-
-				iter = infoStatus.find("cluster_known_nodes");
-				if (iter != infoStatus.end())
-					lstNode.reserve(std::stoull(iter->second));
-			}
-
-			{
-				auto rpy = conn->sendCommand(CCommand("CLUSTER", "slots"));
-				for (auto& nodes : rpy.getReplies())
-				{
-					uint32_t beginSlotReange = (uint32_t)nodes.getReplies().at(0).getInteger();
-					uint32_t endSlotReange = (uint32_t)nodes.getReplies().at(1).getInteger();
-					std::string masterIp = nodes.getReplies().at(2).getReplies().at(0).getStr();
-					uint16_t masterPort = (uint16_t)nodes.getReplies().at(2).getReplies().at(1).getInteger();
-					lstNode.push_back({ beginSlotReange ,endSlotReange , masterIp, masterPort });
-				}
-			}
+			auto lstNode = _getNodes();
 
 			for (auto node : lstNode)
 			{
@@ -302,6 +287,71 @@ namespace MCRedis
 				return fnCRC16(key + s + 1, e - s - 1) & 16383;
 			};
 			return fnHashSlot(key, keyLen);
+		}
+
+		std::vector<std::tuple<uint32_t, uint32_t, std::string, uint16_t>> CClusterSupport::_getNodes() const noexcept
+		{
+			using statusMap_t = std::map<std::string, std::string>;
+			auto fnToStatusMap = [](const std::string& str) -> statusMap_t
+			{
+				statusMap_t statusMap;
+
+				std::istringstream iss(str);
+				std::string line;
+				while (std::getline(iss, line))
+				{
+					if (line.empty() == true || line.at(0) == '#' || line.at(0) == '\r')
+						continue;
+					auto pos = line.find_first_of(':');
+					if (pos == std::string::npos)
+						continue;
+
+					statusMap.insert(statusMap_t::value_type(line.substr(0, pos), line.substr(pos + 1, line.size() - (pos + 2))));
+				}
+				return statusMap;
+			};
+
+			std::unique_ptr<CConnection> conn;
+			for (auto host : lstHost_)
+			{
+				CConnection* connection = new CConnection();
+				if (connection->connect(std::get<0>(host).c_str(), std::get<1>(host), timeoutSec_) == true)
+				{
+					conn.reset(connection);
+					break;
+				}
+			}
+			if (conn == nullptr)
+				return {};
+
+			std::vector<std::tuple<uint32_t, uint32_t, std::string, uint16_t>> lstNode;
+			{
+				auto rpy = conn->sendCommand(CCommand("CLUSTER", "info"));
+				if (rpy.getType() != CReply::EType::STRING)
+					return {};
+
+				auto infoStatus = fnToStatusMap(rpy.getStr());
+				auto iter = infoStatus.find("cluster_state");
+				if (iter == infoStatus.end() || iter->second != "ok")
+					return {};
+
+				iter = infoStatus.find("cluster_known_nodes");
+				if (iter != infoStatus.end())
+					lstNode.reserve(std::stoull(iter->second));
+			}
+
+			{
+				auto rpy = conn->sendCommand(CCommand("CLUSTER", "slots"));
+				for (auto& nodes : rpy.getReplies())
+				{
+					uint32_t beginSlotReange = (uint32_t)nodes.getReplies().at(0).getInteger();
+					uint32_t endSlotReange = (uint32_t)nodes.getReplies().at(1).getInteger();
+					std::string masterIp = nodes.getReplies().at(2).getReplies().at(0).getStr();
+					uint16_t masterPort = (uint16_t)nodes.getReplies().at(2).getReplies().at(1).getInteger();
+					lstNode.push_back(std::make_tuple(beginSlotReange, endSlotReange, masterIp, masterPort));
+				}
+			}
+			return lstNode;
 		}
 	}
 }

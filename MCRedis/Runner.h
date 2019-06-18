@@ -30,7 +30,7 @@ namespace MCRedis
 		template <typename pool_t, typename conn_t, typename lstCommand_t, uint32_t TRetryCount>
 		std::vector<std::pair<conn_t, lstCommand_t>> mapCommandPerNode(pool_t& pool, lstCommand_t& lstCommand)
 		{
-			std::tuple<uint32_t, uint32_t> prevSlotRange = { 0, 0 };
+			std::tuple<uint32_t, uint32_t> prevSlotRange = std::make_tuple(0, 0);
 			std::vector<std::pair<conn_t, lstCommand_t>> lstNodeCommand;
 			for (auto& cmd : lstCommand)
 			{
@@ -84,6 +84,7 @@ namespace MCRedis
 		CRunner(pool_t& pool) : pool_(pool) {}
 		CRunner(CRunner&& rhs) : pool_(rhs.pool_) {}
 		~CRunner() = default;
+		CRunner(CRunner&) = delete;
 		CRunner& operator=(const CRunner&) = delete;
 
 	public:

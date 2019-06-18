@@ -13,3 +13,5 @@ vs2017/.vs/vs/v15/.suo
 vs2017/.vs/
 vs2017/x64/Debug/
 *.user
+vs2013/x64/
+vs2013/vs.v12.suo

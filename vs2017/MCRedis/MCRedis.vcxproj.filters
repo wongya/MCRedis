@@ -46,5 +46,8 @@
     <ClInclude Include="..\..\MCRedis\detail\NullMutex.h">
       <Filter>헤더 파일\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\MCRedis\detail\Helper.h">
+      <Filter>헤더 파일\detail</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

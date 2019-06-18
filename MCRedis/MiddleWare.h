@@ -19,6 +19,20 @@ namespace MCRedis
 			~CDefaultMiddleWare() = default;
 
 		public:
+			std::vector<CConnection*>	create(size_t num) const noexcept
+			{
+				std::vector<CConnection*> lstConn;
+				lstConn.reserve(num);
+				for (size_t x = 0; x < num; ++x)
+				{
+					auto p = getConnection();
+					if (p == nullptr)
+						continue;
+					lstConn.push_back(p);
+				}
+				return lstConn;
+			}
+
 			CConnection*	getConnection(uint32_t /*slot*/ = 0) const noexcept
 			{	
 				CConnection* p = new CConnection;
@@ -63,6 +77,19 @@ namespace MCRedis
 			~CSentinelSupport() = default;
 
 		public:
+			std::vector<CConnection*>	create(size_t num) const noexcept
+			{
+				std::vector<CConnection*> lstConn;
+				lstConn.reserve(num);
+				for (size_t x = 0; x < num; ++x)
+				{
+					auto p = getConnection();
+					if (p == nullptr)
+						continue;
+					lstConn.push_back(p);
+				}
+				return lstConn;
+			}
 			CConnection*	getConnection(uint32_t slot = 0) const noexcept;
 			void			freeConnection(CConnection* p) noexcept { delete p; }
 			uint32_t		getSlot(const char*, size_t ) const noexcept { return std::numeric_limits<uint32_t>::max(); }
@@ -81,9 +108,13 @@ namespace MCRedis
 			~CClusterSupport() = default;
 
 		public:
+			std::vector<CConnection*>	create(size_t num) const noexcept;
 			CConnection*	getConnection(uint32_t slot) const noexcept;
 			void			freeConnection(CConnection* p) noexcept { delete p; }
 			uint32_t		getSlot(const char* key, size_t keyLen) const noexcept;
+
+		protected:
+			std::vector<std::tuple<uint32_t, uint32_t, std::string, uint16_t>> _getNodes() const noexcept;
 		};
 	}
 }
