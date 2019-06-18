@@ -18,7 +18,7 @@ namespace MCRedis
 		template <typename Tuple, typename TCallback, size_t TIndex>
 		struct _tuple_ierator<Tuple, TCallback, TIndex, 0>
 		{
-			void operator()(Tuple& tuple, TCallback& fn) {}
+			void operator()(Tuple& , TCallback& ) {}
 		};
 	}
 }
