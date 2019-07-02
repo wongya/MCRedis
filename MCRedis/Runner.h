@@ -256,6 +256,7 @@ namespace MCRedis
 
 	public:
 		CAsyncRunner() = delete;
+		CAsyncRunner(const CAsyncRunner&) = delete;
 		CAsyncRunner(pool_t& pool) : pool_(pool) {}
 		CAsyncRunner(CAsyncRunner&& rhs) : pool_(rhs.pool_) {}
 		~CAsyncRunner()
