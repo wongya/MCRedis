@@ -115,7 +115,7 @@ namespace MCRedis
 		uint32_t				_getSlot(const char* key, size_t keyLen) 
 		{
 			_get_slot fnGetSlot(key, keyLen);
-			detail::_tuple_ierator<lstMW_t, _get_slot, 0, sizeof...(TMiddleWare)>{}(mw_, fnGetSlot);
+			detail::_tuple_iterator<lstMW_t, _get_slot, 0, sizeof...(TMiddleWare)>{}(mw_, fnGetSlot);
 			return  fnGetSlot.slotNo_;
 		}
 
@@ -126,7 +126,7 @@ namespace MCRedis
 			if (iter == pool_.end() || iter->second.empty() == true)
 			{
 				_get_connection fnGetConn(slot);
-				detail::_tuple_ierator<lstMW_t, _get_connection, 0, sizeof...(TMiddleWare)>{}(mw_, fnGetConn);
+				detail::_tuple_iterator<lstMW_t, _get_connection, 0, sizeof...(TMiddleWare)>{}(mw_, fnGetConn);
 				conn_ptr_t connPtr(fnGetConn.conn_);
 				if (connPtr == nullptr)
 					return CConnectionRAII(this, nullptr);
@@ -143,7 +143,7 @@ namespace MCRedis
 	bool CConnectionPool<TMutex, TMiddleWare...>::create(size_t defaultNum)
 	{
 		_pre_create fnCreator(defaultNum);
-		detail::_tuple_ierator<lstMW_t, _pre_create, 0, sizeof...(TMiddleWare)>{}(mw_, fnCreator);
+		detail::_tuple_iterator<lstMW_t, _pre_create, 0, sizeof...(TMiddleWare)>{}(mw_, fnCreator);
 		if (fnCreator.lstConnection_.empty() == true)
 			return false;
 		for (auto conn : fnCreator.lstConnection_)
